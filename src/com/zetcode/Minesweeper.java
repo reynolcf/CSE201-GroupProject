@@ -12,6 +12,8 @@
  * 1. Added private void initMainMenu()
  * 2. Added saves folder
  * 3. Added Utilities.java
+ * 4. Added a second status bar named 'statusbar2', this is to display the amount
+ *    of treasure collected
  * 
  * Explanation:
  * 1. This will allow us to create a main menu rather than launching
@@ -48,6 +50,7 @@ public class Minesweeper extends JFrame {
     private final static int WINDOW_HEIGHT = 400;
     
     private JLabel statusbar;
+    private JLabel statusbar2;
 
     JPanel pausePanel; // Created globally to allow gameBoard to work correctly when overlapping panels
 
@@ -69,11 +72,16 @@ public class Minesweeper extends JFrame {
         // Frame settings (window)
         setPreferredSize(new Dimension(WINDOW_WIDTH, WINDOW_HEIGHT)); // Set frame dimensions
         setResizable(false);
-        pack();
+        
         setTitle("Minesweeper");
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
+        
+        getContentPane().setLayout(new BorderLayout());
+        
+		pack();
+		
+		
         System.out.println("Minesweeper.initFrame(): JFrame initialized.");
 
         // Launch main menu after initialization
@@ -130,7 +138,7 @@ public class Minesweeper extends JFrame {
         menuPanel.add(exitGameButton);
         menuPanel.add(Box.createVerticalStrut(15));
 
-        add(menuPanel, BorderLayout.SOUTH); // Add menuPanel to the bottom of the frame
+        getContentPane().add(menuPanel, BorderLayout.SOUTH); // Add menuPanel to the bottom of the frame
 
         System.out.println("Minesweeper.mainMenu(): Main menu launched.");
 
@@ -264,19 +272,20 @@ public class Minesweeper extends JFrame {
         scrollPane.setPreferredSize(new Dimension(WINDOW_WIDTH, WINDOW_HEIGHT)); 
 
         // Add scroll panel to frame
-        add(scrollPane);
+        getContentPane().add(scrollPane);
 
         // Button actions
         backButton.addActionListener((ActionEvent e) -> { // backButton action
 
             // TODO Fix back button
             // TODO Check if removing the components is better or worse than setting the visibility to false
-            saveFilePanel.setVisible(false);
-            scrollPane.setVisible(false);
+           // saveFilePanel.setVisible(false);
+           // scrollPane.setVisible(false);
 
             // Remove panels
             getContentPane().remove(saveFilePanel);
             getContentPane().remove(scrollPane);
+        	getContentPane().removeAll();
 
             // Refresh JFrame after removing componenets
             revalidate();
@@ -420,21 +429,27 @@ public class Minesweeper extends JFrame {
 
         // Initialize gui elements
         statusbar = new JLabel(""); // Displays flag count, game won, game lost
+        statusbar2 = new JLabel("");
         JButton pauseButton = new JButton("Pause"); // Back button to return to main menu
+        
 
         // Align elements in the center
         statusbar.setAlignmentX(CENTER_ALIGNMENT);
+        statusbar.setAlignmentX(CENTER_ALIGNMENT);
         pauseButton.setAlignmentX(CENTER_ALIGNMENT);
+        
 
         // Add elements to panel
-        gamePanel.add(new Board(statusbar));
+        gamePanel.add(new Board(statusbar, statusbar2));
         gamePanel.add(statusbar);
-        gamePanel.add(Box.createVerticalStrut(50)); // Add spacing between buttons vertically
+        gamePanel.add(Box.createVerticalStrut(15)); // Add spacing between buttons vertically
+        gamePanel.add(statusbar2);
+        gamePanel.add(Box.createVerticalStrut(35)); // Add spacing between buttons vertically
         gamePanel.add(pauseButton);
         gamePanel.add(Box.createVerticalStrut(15)); // Add spacing between buttons vertically
 
         // Add panel to frame
-        add(gamePanel);
+        getContentPane().add(gamePanel);
 
         // Refresh frame after adding panel
         revalidate();
