@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 public class Utilities {
 
@@ -173,7 +174,7 @@ public class Utilities {
 	 * 				The implementation now is completely correct so do not remove it.
 	 */
     @SuppressWarnings("ConvertToTryWithResources")
-	public static void saveBoard(ArrayList<Integer> cellValues, String saveName, int boardWidth) {
+	public static void saveBoard(Cell[] field, String saveName, int boardWidth) {
 
 		System.out.println("Utilities.saveBoard(ArrayList<Integer> cellValues, String saveName, int boardWidth): Saving board...");
 		
@@ -196,9 +197,9 @@ public class Utilities {
 			// TODO fix when difficulty is implemented
 			write.append("Difficulty: N/A\n");
 
-			for (int i = 0; i < cellValues.size(); i++) {
+			for (int i = 0; i < field.length; i++) {
 
-				write.append(cellValues.get(i) + ",");
+				write.append(field[i].saveBoardValue() + ",");
 				
 				if ((i + 1) % boardWidth == 0) { // New line
 					write.append("\n");
@@ -245,7 +246,7 @@ public class Utilities {
 	 * 
 	 */
 	// TODO Implement function
-	public static void loadBoard(String loadSaveFileName) {
+	public static ArrayList<Integer> loadBoard(String loadSaveFileName) {
 
 		System.out.println("Utilities.loadBoard(): Loading board...");
 		
@@ -258,6 +259,36 @@ public class Utilities {
 				if (loadSaveFileName.equals(saveFileName)) {
 					
 					System.out.println("Utilities.loadBoard(): File found.");
+					File file = new File("src\\saves\\" + loadSaveFileName + "-save.csv");
+					Scanner scanner = new Scanner(file);
+
+		            // Skip the first line (Board Name)
+		            if (scanner.hasNextLine()) {
+		                scanner.nextLine();
+		            }
+		            int numCols = 0;
+		            ArrayList<Integer> boardData = new ArrayList<>();
+		            while (scanner.hasNextLine()) {
+		                String line = scanner.nextLine().trim();
+		                if (line.isEmpty()) continue; // Skip empty lines
+
+		                // Remove trailing comma
+		                if (line.endsWith(",")) {
+		                    line = line.substring(0, line.length() - 1);
+		                }
+
+		                // Split by commas
+		                String[] tokens = line.split(",");
+		                
+		                numCols = tokens.length;
+
+		                for (String token : tokens) {
+		                    boardData.add(Integer.parseInt(token.trim()));
+		                }
+		            }
+		            boardData.add(numCols);
+		            scanner.close();
+		            return boardData;
 				}
 			}
 
@@ -268,5 +299,6 @@ public class Utilities {
 		}
 
 		System.out.println("Utilities.loadBoard(): Board loaded.");
+		return null;
 	}
 }
