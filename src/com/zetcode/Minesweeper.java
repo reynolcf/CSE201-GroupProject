@@ -14,6 +14,8 @@
  * 3. Added Utilities.java
  * 4. Added a second status bar named 'statusbar2', this is to display the amount
  *    of treasure collected
+ * 5. Fixed the Load Menu back button
+ * 6. Added function to the save and load function, STILL NOT FULLY FUNCTIONAL
  * 
  * Explanation:
  * 1. This will allow us to create a main menu rather than launching
@@ -22,6 +24,14 @@
  *      and load into that specific board
  * 3. This new file houses some of the utilites that allow the program
  *      to pull data from the computer
+ * 6. This allows the user to save their game and load back into it.
+ *      Please note that currently, the saves don't work if the game
+ *      is closed and reopened, it only works in the session it is
+ *      saved in. Also, currently if you save the game, the treasure
+ *      count doesn't update correctly based on how much treasure
+ *      the user spent before saving. Also, if you save a game, make
+ *      more progress in the same game, and then save again, even with
+ *      a different name, it overwrites the old save with this new save.
 */
 
 package com.zetcode;
@@ -139,6 +149,9 @@ public class Minesweeper extends JFrame {
         menuPanel.add(Box.createVerticalStrut(15));
 
         getContentPane().add(menuPanel, BorderLayout.SOUTH); // Add menuPanel to the bottom of the frame
+        
+        revalidate();
+        repaint();
 
         System.out.println("Minesweeper.mainMenu(): Main menu launched.");
 
@@ -146,7 +159,7 @@ public class Minesweeper extends JFrame {
         newGameButton.addActionListener((ActionEvent e) -> { // newGameButton action
 
             menuPanel.setVisible(false); // Make panel invisible
-            initUI();
+            initUI(null);
         });
 
         loadGameButton.addActionListener((ActionEvent e) -> { // loadGameButton action
@@ -225,7 +238,7 @@ public class Minesweeper extends JFrame {
         saveButton.addActionListener((ActionEvent e) -> { // saveButton action
 
             String saveFileName = fileNameInput.getText();
-            Utilities.saveBoard(Board.cellValues, saveFileName, Board.N_COLS);
+            Utilities.saveBoard(Board.field, saveFileName, Board.N_COLS);
             savePanel.setVisible(false); // Remove savePanel after saving
         });        
     }
@@ -239,6 +252,7 @@ public class Minesweeper extends JFrame {
     private void loadMenu() {
 
         System.out.println("Minesweeper.loadMenu(): Launching load menu...");
+        getContentPane().removeAll();
 
         // Create panel to store the buttons
         JPanel saveFilePanel = new JPanel();
@@ -256,6 +270,12 @@ public class Minesweeper extends JFrame {
             saveFileButton.setMinimumSize(new Dimension(WINDOW_WIDTH, 30));
             saveFileButton.setPreferredSize(new Dimension(WINDOW_WIDTH, 30));
             saveFileButton.setMaximumSize(new Dimension(WINDOW_WIDTH, 30));
+            
+            saveFileButton.addActionListener((ActionEvent e) -> {
+                System.out.println("Loading save file: " + fileName);
+                ArrayList<Integer> save = Utilities.loadBoard(fileName);
+                initUI(save);
+            });
             
             saveFilePanel.add(saveFileButton); // Add button to panel
             saveFilePanel.add(Box.createVerticalStrut(5)); // Add spacing between buttons vertically
@@ -279,12 +299,9 @@ public class Minesweeper extends JFrame {
 
             // TODO Fix back button
             // TODO Check if removing the components is better or worse than setting the visibility to false
-           // saveFilePanel.setVisible(false);
-           // scrollPane.setVisible(false);
-
-            // Remove panels
-            getContentPane().remove(saveFilePanel);
-            getContentPane().remove(scrollPane);
+            // FIXED THE BACK BUTTON, the issue was that in the main menu method, repaint and revalidate
+        	// was never called
+        	
         	getContentPane().removeAll();
 
             // Refresh JFrame after removing componenets
@@ -417,7 +434,7 @@ public class Minesweeper extends JFrame {
      *              method. This is a special case where we want to remove
      *              everything from the content frame before creating.
     */
-    private void initUI() {
+    private void initUI(ArrayList<Integer> save) {
 
         System.out.println("Minesweeper.initUI(): Initializing UI...");
 
@@ -440,7 +457,7 @@ public class Minesweeper extends JFrame {
         
 
         // Add elements to panel
-        gamePanel.add(new Board(statusbar, statusbar2));
+        gamePanel.add(new Board(statusbar, statusbar2, save));
         gamePanel.add(statusbar);
         gamePanel.add(Box.createVerticalStrut(15)); // Add spacing between buttons vertically
         gamePanel.add(statusbar2);
