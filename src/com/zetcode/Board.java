@@ -42,7 +42,7 @@ public class Board extends JPanel {
 	private int collectedTreasure;
 	private final int NUM_TREASURE = 20; // Number of treasure to be generated, must be 'less than number of mines'
 	private final JLabel statusbar2;
-	private Cell[] field;    // Stores all the cells in the game
+	public static Cell[] field = null;    // Stores all the cells in the game
 	
 	
 	
@@ -71,8 +71,8 @@ public class Board extends JPanel {
 
     // Game mines couunt
     private final int N_MINES = 40;
-    public static final int N_ROWS = 16;
-    public static final int N_COLS = 16;
+    public static int N_ROWS = 16;
+    public static int N_COLS = 16;
 
     // Game board size
     public final int BOARD_WIDTH = N_COLS * CELL_SIZE + 1;
@@ -117,89 +117,104 @@ public class Board extends JPanel {
     public void generateBoard() {
     	// Array list to track the cells that are mines
         cellValues = new ArrayList<>();
-    	int cell;
+    	
     	allCells = N_ROWS * N_COLS;
-        field = new Cell[allCells];
-        var random = new Random();
+    	
+    	if (field != null) {
+    		for (Cell cell : field) {
+    			if (cell.isMine()) {
+    				cellValues.add(1);
+    			} else if (cell.isTreasure()) {
+    				cellValues.add(2);
+    			} else {
+    				cellValues.add(0);
+    			}
+    		}
+    		initializeTrackers();
+    	} else {
+    		int cell;
+            field = new Cell[allCells];
+            var random = new Random();
 
-        for (int i = 0; i < allCells; i++) {
+            for (int i = 0; i < allCells; i++) {
 
-            field[i] = new Cell();
-            cellValues.add(0); // Fill with list with empty cells
-        }
-        
+                field[i] = new Cell();
+                cellValues.add(0); // Fill with list with empty cells
+            }
+            
 
-        int i = 0;
-        
-        // Generates the mines, and updates the numAdjacentMines of all 8 surrounding cells
-        while (i < N_MINES) {
+            int i = 0;
+            
+            // Generates the mines, and updates the numAdjacentMines of all 8 surrounding cells
+            while (i < N_MINES) {
 
-            int position = (int) (allCells * random.nextDouble());
+                int position = (int) (allCells * random.nextDouble());
 
-            if ((position < allCells)
-                    && (field[position].isMine() == false)) {
+                if ((position < allCells)
+                        && (field[position].isMine() == false)) {
 
-                int current_col = position % N_COLS;
-                field[position].setIsMine(true);
-            	field[position].setIsEmptyCell(false);
-                
-                
-                cellValues.set(position, 1); // Update to mine
-                i++;
+                    int current_col = position % N_COLS;
+                    field[position].setIsMine(true);
+                	field[position].setIsEmptyCell(false);
+                    
+                    
+                    cellValues.set(position, 1); // Update to mine
+                    i++;
 
-                if (current_col > 0) {
-                    cell = position - 1 - N_COLS;
+                    if (current_col > 0) {
+                        cell = position - 1 - N_COLS;
+                        if (cell >= 0) {
+                        	trackNumAdjacentMines(cell);
+                        }
+                        cell = position - 1;
+                        if (cell >= 0) {
+                        	trackNumAdjacentMines(cell);
+                        }
+
+                        cell = position + N_COLS - 1;
+                        if (cell < allCells) {
+                        	trackNumAdjacentMines(cell);
+                        }
+                    }
+
+                    cell = position - N_COLS;
                     if (cell >= 0) {
                     	trackNumAdjacentMines(cell);
                     }
-                    cell = position - 1;
-                    if (cell >= 0) {
-                    	trackNumAdjacentMines(cell);
-                    }
 
-                    cell = position + N_COLS - 1;
+                    cell = position + N_COLS;
                     if (cell < allCells) {
                     	trackNumAdjacentMines(cell);
                     }
-                }
 
-                cell = position - N_COLS;
-                if (cell >= 0) {
-                	trackNumAdjacentMines(cell);
-                }
-
-                cell = position + N_COLS;
-                if (cell < allCells) {
-                	trackNumAdjacentMines(cell);
-                }
-
-                if (current_col < (N_COLS - 1)) {
-                    cell = position - N_COLS + 1;
-                    if (cell >= 0) {
-                    	trackNumAdjacentMines(cell);
-                    }
-                    cell = position + N_COLS + 1;
-                    if (cell < allCells) {
-                    	trackNumAdjacentMines(cell);
-                    }
-                    cell = position + 1;
-                    if (cell < allCells) {
-                        trackNumAdjacentMines(cell);
+                    if (current_col < (N_COLS - 1)) {
+                        cell = position - N_COLS + 1;
+                        if (cell >= 0) {
+                        	trackNumAdjacentMines(cell);
+                        }
+                        cell = position + N_COLS + 1;
+                        if (cell < allCells) {
+                        	trackNumAdjacentMines(cell);
+                        }
+                        cell = position + 1;
+                        if (cell < allCells) {
+                            trackNumAdjacentMines(cell);
+                        }
                     }
                 }
             }
-        }
-        
-        // New loop to add the mines to the field
-        i = 0;
-        while (i < NUM_TREASURE) {
-        	int position = (int) (allCells * random.nextDouble());
-        	if (field[position].isMine() == false) {
-        		field[position].setIsTreasure(true);
-        		cellValues.set(position, 2);
-        		i++;
-        	}
-        }
+            
+            // New loop to add the mines to the field
+            i = 0;
+            while (i < NUM_TREASURE) {
+            	int position = (int) (allCells * random.nextDouble());
+            	if (field[position].isMine() == false) {
+            		field[position].setIsTreasure(true);
+            		cellValues.set(position, 2);
+            		i++;
+            	}
+            }
+    	}
     }
     
     
@@ -236,6 +251,21 @@ public class Board extends JPanel {
     
     
     
+    public void initializeTrackers() {
+    	for (Cell cell : field) {
+    		if ((cell.isMine() && !cell.isCovered()) || cell.isFlagged()) {
+    			minesLeft--;
+    		}
+    		if (cell.isTreasure() && !cell.isCovered()) {
+    			collectedTreasure++;
+    		}
+    	}
+    	
+    }
+    
+    
+    
+    
 /*********************************************************************************************************************/
     
     
@@ -247,10 +277,19 @@ public class Board extends JPanel {
      *                      that it can be changed to show the number
      *                      of flags that are left during the game.
      */
-    public Board(JLabel statusbar, JLabel statusbar2) {
+    public Board(JLabel statusbar, JLabel statusbar2, ArrayList<Integer> save) {
 
         this.statusbar = statusbar;
         this.statusbar2 = statusbar2;
+        if (save != null) {
+        	N_COLS = save.get(save.size() - 1);
+        	N_ROWS = (save.size() - 1) / N_COLS;
+        	field = new Cell[save.size() - 1];
+        	for (int i = 0; i < save.size() - 1; i++) {
+        		Cell cell = new Cell(save.get(i));
+        		field[i] = cell;
+        	}
+        }
         
         initBoard(); 
     }
@@ -304,11 +343,13 @@ public class Board extends JPanel {
         minesLeft = N_MINES;
         collectedTreasure = 0;
         
-        statusbar.setText("Mines remaining: " + Integer.toString(minesLeft));
-        statusbar2.setText("Treasure collected: " + Integer.toString(collectedTreasure));
+        
 
         
         generateBoard();
+        
+        statusbar.setText("Mines remaining: " + Integer.toString(minesLeft));
+        statusbar2.setText("Treasure collected: " + Integer.toString(collectedTreasure));
         
         
         System.out.println("Board.newGame(): New game started.");
