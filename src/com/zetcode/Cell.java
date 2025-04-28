@@ -25,6 +25,28 @@ public class Cell {
 		numAdjacentMines = 0;
 	}
 	
+	public Cell(int value) {
+		int modValue = value % 100;
+		if (modValue < 10) {
+			this.isCovered = false;
+		}
+		if (value % 10 != 0) {
+			this.isEmptyCell = false;
+		}
+		if (8 >= value % 10 && value % 10 >= 1) {
+			this.numAdjacentMines = value;
+		}
+		if (value % 10 == 9) {
+			this.isMine = true;
+		}
+		if (value >= 100) {
+			this.isTreasure = true;
+		}
+		if (29 >= modValue && modValue >= 20) {
+			this.isFlagged = true;
+		}
+	}
+	
 	public boolean isEmptyCell() {
 		return isEmptyCell;
 	}
@@ -82,5 +104,48 @@ public class Cell {
 	public boolean isCoveredAndFlaggedMine() {
 		return isCovered() && isFlagged() && isMine();
 	}
+	
+	/**
+	 * This method gets the numeric representation of the cell, used to save the 
+	 * board in the form of a text file.
+	 * 
+	 * 0 = Empty
+	 * 1-8 = Cell adjacent to this number of mines
+	 * 9 = Mine
+	 * 
+	 * 10 = Empty but not uncovered
+	 * 11-18 = Cell adjacent to this number of mines but not uncovered
+	 * 19 = Mine but not uncovered
+	 * 
+	 * 20 = Empty but not uncovered and is flagged
+	 * 21-28 = Cell adjacent to this number of mines but not uncovered and is flagged
+	 * 29 = Mine but not uncovered and is flagged
+	 * 
+	 * @return returns the number representation of the cell
+	 */
+	public int saveBoardValue() {
+		int i = this.number();
+		
+		if (this.isEmptyCell()) {
+			i = 0;
+		} else if (this.isMine()) {
+			i = 9;
+		}
+		
+		if (this.isCovered()) {
+			i += 10;
+		}
+		
+		if (this.isFlagged()) {
+			i += 10;
+		}
+		if (this.isTreasure()) {
+			i += 100;
+		}
+		
+		return i;
+	}
+	
+	
 	
 }
