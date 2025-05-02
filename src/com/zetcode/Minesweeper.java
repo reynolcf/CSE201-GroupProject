@@ -238,7 +238,7 @@ public class Minesweeper extends JFrame {
         saveButton.addActionListener((ActionEvent e) -> { // saveButton action
 
             String saveFileName = fileNameInput.getText();
-            Utilities.saveBoard(Board.field, saveFileName, Board.N_COLS);
+            Utilities.saveBoard(Board.field, saveFileName, Board.N_COLS, Board.collectedTreasure);
             savePanel.setVisible(false); // Remove savePanel after saving
         });        
     }
@@ -383,6 +383,9 @@ public class Minesweeper extends JFrame {
         returnButton.addActionListener((ActionEvent e) -> { // returnButton action
 
             pausePanel.setVisible(false);
+            Board.field = null;
+            Board.cellValues = null;
+            Board.collectedTreasure = 0;
             
             getContentPane().removeAll(); // Remove the all cell covers (Ie the board)
 

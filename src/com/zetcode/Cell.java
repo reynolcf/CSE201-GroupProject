@@ -26,23 +26,23 @@ public class Cell {
 	}
 	
 	public Cell(int value) {
-		int modValue = value % 100;
-		if (modValue < 10) {
-			this.isCovered = false;
+		int modHundred = value % 100;
+		int modTen = value % 10;
+		
+		this.isCovered = modHundred < 10 ? false : true;
+		
+		this.isEmptyCell = modTen != 0 ? false : true;
+		if (8 >= modTen && modTen >= 1) {
+			this.numAdjacentMines = value % 10;
 		}
-		if (value % 10 != 0) {
-			this.isEmptyCell = false;
-		}
-		if (8 >= value % 10 && value % 10 >= 1) {
-			this.numAdjacentMines = value;
-		}
-		if (value % 10 == 9) {
+		
+		if (modTen == 9) {
 			this.isMine = true;
 		}
 		if (value >= 100) {
 			this.isTreasure = true;
 		}
-		if (29 >= modValue && modValue >= 20) {
+		if (29 >= modHundred && modHundred >= 20) {
 			this.isFlagged = true;
 		}
 	}

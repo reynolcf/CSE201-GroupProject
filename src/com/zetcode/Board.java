@@ -39,7 +39,7 @@ import javax.swing.JPanel;
 public class Board extends JPanel {
 	
 	//Newly added variables
-	private int collectedTreasure;
+	public static int collectedTreasure;
 	private final int NUM_TREASURE = 20; // Number of treasure to be generated, must be 'less than number of mines'
 	private final JLabel statusbar2;
 	public static Cell[] field = null;    // Stores all the cells in the game
@@ -256,9 +256,7 @@ public class Board extends JPanel {
     		if ((cell.isMine() && !cell.isCovered()) || cell.isFlagged()) {
     			minesLeft--;
     		}
-    		if (cell.isTreasure() && !cell.isCovered()) {
-    			collectedTreasure++;
-    		}
+    		
     	}
     	
     }
@@ -281,11 +279,13 @@ public class Board extends JPanel {
 
         this.statusbar = statusbar;
         this.statusbar2 = statusbar2;
+        collectedTreasure = 0;
         if (save != null) {
-        	N_COLS = save.get(save.size() - 1);
-        	N_ROWS = (save.size() - 1) / N_COLS;
-        	field = new Cell[save.size() - 1];
-        	for (int i = 0; i < save.size() - 1; i++) {
+        	collectedTreasure = save.get(save.size() - 1);
+        	N_COLS = save.get(save.size() - 2);
+        	N_ROWS = (save.size() - 2) / N_COLS;
+        	field = new Cell[save.size() - 2];
+        	for (int i = 0; i < save.size() - 2; i++) {
         		Cell cell = new Cell(save.get(i));
         		field[i] = cell;
         	}
@@ -341,7 +341,7 @@ public class Board extends JPanel {
         
         inGame = true;
         minesLeft = N_MINES;
-        collectedTreasure = 0;
+        
         
         
 
@@ -478,7 +478,10 @@ public class Board extends JPanel {
                     	cell = DRAW_MINE;
                     }
                 }
-
+                
+                if (cell > 12) {
+                	System.out.println("(" + i + ", " + j + ")");
+                }
                 
                 g.drawImage(img[cell], (j * CELL_SIZE),
                         (i * CELL_SIZE), this);

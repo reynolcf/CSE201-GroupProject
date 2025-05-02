@@ -174,7 +174,7 @@ public class Utilities {
 	 * 				The implementation now is completely correct so do not remove it.
 	 */
     @SuppressWarnings("ConvertToTryWithResources")
-	public static void saveBoard(Cell[] field, String saveName, int boardWidth) {
+	public static void saveBoard(Cell[] field, String saveName, int boardWidth, int treasure) {
 
 		System.out.println("Utilities.saveBoard(ArrayList<Integer> cellValues, String saveName, int boardWidth): Saving board...");
 		
@@ -196,6 +196,8 @@ public class Utilities {
 			write.append("Board Name: " + saveName + "\n");
 			// TODO fix when difficulty is implemented
 			write.append("Difficulty: N/A\n");
+			
+			write.append("Treasure Remaining:" + treasure + "\n");
 
 			for (int i = 0; i < field.length; i++) {
 
@@ -261,10 +263,20 @@ public class Utilities {
 					System.out.println("Utilities.loadBoard(): File found.");
 					File file = new File("src\\saves\\" + loadSaveFileName + "-save.csv");
 					Scanner scanner = new Scanner(file);
+					int treasureRemaining = 0;
 
 		            // Skip the first line (Board Name)
 		            if (scanner.hasNextLine()) {
 		                scanner.nextLine();
+		            }
+		            // TODO this skips the difficulty level
+		            if (scanner.hasNextLine()) {
+		                scanner.nextLine();
+		            }
+		            if (scanner.hasNextLine()) {
+		            	String treasure = scanner.nextLine();
+		            	int index = treasure.indexOf(':');
+		            	treasureRemaining = Integer.parseInt(treasure.substring(index + 1));
 		            }
 		            int numCols = 0;
 		            ArrayList<Integer> boardData = new ArrayList<>();
@@ -287,6 +299,7 @@ public class Utilities {
 		                }
 		            }
 		            boardData.add(numCols);
+		            boardData.add(treasureRemaining);
 		            scanner.close();
 		            return boardData;
 				}
