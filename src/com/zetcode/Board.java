@@ -40,7 +40,7 @@ public class Board extends JPanel {
 	
 	//Newly added variables
 	public static int collectedTreasure;
-	private final int NUM_TREASURE = 20; // Number of treasure to be generated, must be 'less than number of mines'
+	private int NUM_TREASURE = 20; // Number of treasure to be generated, must be 'less than number of mines'
 	private final JLabel statusbar2;
 	public static Cell[] field = null;    // Stores all the cells in the game
 	
@@ -70,7 +70,7 @@ public class Board extends JPanel {
     private final int DRAW_TREASURE = 13;
 
     // Game mines count
-    private final int N_MINES = 40;
+    private int N_MINES = 40;
     public static int N_ROWS = 16;
     public static int N_COLS = 16;
 
@@ -276,7 +276,7 @@ public class Board extends JPanel {
      *                      that it can be changed to show the number
      *                      of flags that are left during the game.
      */
-    public Board(JLabel statusbar, JLabel statusbar2, ArrayList<Integer> save, int difficultyLevel) {
+    public Board(JLabel statusbar, JLabel statusbar2, ArrayList<Integer> save, int difficultyLevel, Minesweeper window) {
 
         this.statusbar = statusbar;
         this.statusbar2 = statusbar2;
@@ -294,19 +294,27 @@ public class Board extends JPanel {
         	}
         }
  
-        if (difficultyLevel == 1) {
-        	
+        if (this.difficultyLevel == 1) {
+        	window.setSize(200, 300);
+        	N_COLS = 8;
+        	N_ROWS = 8;
+        	N_MINES = 10;
+        	NUM_TREASURE = 2;
         	// Default values
         }
-        else if (difficultyLevel == 2) {
-        	
+        else if (this.difficultyLevel == 2) {
+        	window.setSize(255, 400);
         	N_COLS = 16;
         	N_ROWS = 16;
+        	N_MINES = 40;
+        	NUM_TREASURE = 8;
         }
-        else if (difficultyLevel == 3) {
-        	
+        else if (this.difficultyLevel == 3) {
+        	window.setSize(465, 400);
         	N_COLS = 30;
         	N_ROWS = 16;
+        	N_MINES = 90;
+        	NUM_TREASURE = 18;
         }
         
         initBoard(); 
@@ -500,8 +508,8 @@ public class Board extends JPanel {
                 if (cell > 12) {
                 	System.out.println("(" + i + ", " + j + ")");
                 }
-                
-                g.drawImage(img[cell], (j * CELL_SIZE),
+                int padding = difficultyLevel == 1? 37 : 0;
+                g.drawImage(img[cell], (j * CELL_SIZE) + padding,
                         (i * CELL_SIZE), this);
             }
         }

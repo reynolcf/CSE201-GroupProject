@@ -495,7 +495,7 @@ public class Minesweeper extends JFrame {
         });
 
         returnButton.addActionListener((ActionEvent e) -> { // returnButton action
-
+        	this.setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
             pausePanel.setVisible(false);
             Board.field = null;
             Board.cellValues = null;
@@ -574,7 +574,7 @@ public class Minesweeper extends JFrame {
         
 
         // Add elements to panel
-        gamePanel.add(new Board(statusbar, statusbar2, save, difficultyLevel));
+        gamePanel.add(new Board(statusbar, statusbar2, save, difficultyLevel, this));
         gamePanel.add(statusbar);
         gamePanel.add(Box.createVerticalStrut(15)); // Add spacing between buttons vertically
         gamePanel.add(statusbar2);
@@ -596,6 +596,11 @@ public class Minesweeper extends JFrame {
         });
 
         System.out.println("Minesweeper.initUI(): UI initialized.");
+    }
+    
+    
+    public void changeSize(int x, int y) {
+    	this.setSize(x, y);
     }
 
     /**
