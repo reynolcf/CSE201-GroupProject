@@ -62,7 +62,9 @@ public class Minesweeper extends JFrame {
     private JLabel statusbar;
     private JLabel statusbar2;
 
-    JPanel pausePanel; // Created globally to allow gameBoard to work correctly when overlapping panels
+    // Created globally to allow layered frames to work correctly
+    JPanel pausePanel;
+    JPanel levelPanel; 
 
     /**
      * Default constructor for the minesweeper class
@@ -159,7 +161,8 @@ public class Minesweeper extends JFrame {
         newGameButton.addActionListener((ActionEvent e) -> { // newGameButton action
 
             menuPanel.setVisible(false); // Make panel invisible
-            initUI(null);
+            //initUI(null);
+            levelSelectionMenu();
         });
 
         loadGameButton.addActionListener((ActionEvent e) -> { // loadGameButton action
@@ -242,6 +245,117 @@ public class Minesweeper extends JFrame {
             savePanel.setVisible(false); // Remove savePanel after saving
         });        
     }
+    
+    /**
+     * 
+     */
+    private void levelSelectionMenu() {
+
+        // Create a new panel to store gui elements
+        levelPanel = new JPanel();
+        levelPanel.setLayout(new BoxLayout(levelPanel, BoxLayout.Y_AXIS)); // Makes buttons stack vertically
+
+        // Initialize gui elements
+        JLabel levelText = new JLabel("Level Selection"); // Display pause text at top
+        JButton beginnerButton = new JButton("Beginner"); // Resume button to return to game
+        JButton intermediateButton = new JButton("Intermediate"); // Save button to save the current board
+        JButton expertButton = new JButton("Expert"); // Return button to return to the main menu
+        JButton backButton = new JButton("< Back");
+
+        // Align buttons to the center of the panel
+        levelText.setAlignmentX(CENTER_ALIGNMENT);
+        beginnerButton.setAlignmentX(CENTER_ALIGNMENT);
+        intermediateButton.setAlignmentX(CENTER_ALIGNMENT);
+        expertButton.setAlignmentX(CENTER_ALIGNMENT);
+        backButton.setAlignmentX(CENTER_ALIGNMENT);
+
+        // Add elements to panel
+        levelPanel.add(Box.createVerticalStrut(15)); // Add spacing between buttons vertically
+        levelPanel.add(levelText);
+        levelPanel.add(Box.createVerticalStrut(185));
+        levelPanel.add(Box.createVerticalStrut(5));
+        levelPanel.add(beginnerButton);
+        levelPanel.add(Box.createVerticalStrut(5));
+        levelPanel.add(intermediateButton);
+        levelPanel.add(Box.createVerticalStrut(5));
+        levelPanel.add(expertButton);
+        levelPanel.add(Box.createVerticalStrut(15));
+        levelPanel.add(backButton);
+        levelPanel.add(Box.createVerticalStrut(15));
+
+        levelPanel.setBounds(0, 0, getWidth(), getHeight()); // Adjust panel dimensions
+
+        // Add panel to layered frame
+        getLayeredPane().add(levelPanel, JLayeredPane.POPUP_LAYER);
+
+        levelPanel.setVisible(true); // Ensure panel is visible
+    
+        // Button actions
+        beginnerButton.addActionListener((ActionEvent e) -> { // beginnerButton action
+
+        	levelPanel.setVisible(false);
+            Board.field = null;
+            Board.cellValues = null;
+            Board.collectedTreasure = 0;
+            
+            getContentPane().removeAll(); // Remove the all cell covers (Ie the board)
+
+            // Refresh frame after removing board
+            revalidate();
+            repaint();
+
+            initUI(null, 1);
+        });
+
+        intermediateButton.addActionListener((ActionEvent e) -> { // intermediateButton action
+
+        	levelPanel.setVisible(false);
+            Board.field = null;
+            Board.cellValues = null;
+            Board.collectedTreasure = 0;
+            
+            getContentPane().removeAll();
+
+            // Refresh frame after removing board
+            revalidate();
+            repaint();
+
+            initUI(null, 2);
+        });
+
+        expertButton.addActionListener((ActionEvent e) -> { // expertButton action
+
+        	levelPanel.setVisible(false);
+            Board.field = null;
+            Board.cellValues = null;
+            Board.collectedTreasure = 0;
+            
+            getContentPane().removeAll();
+
+            // Refresh frame after removing board
+            revalidate();
+            repaint();
+
+            initUI(null, 3);
+        });
+
+        backButton.addActionListener((ActionEvent e) -> { // backButton action
+
+        	levelPanel.setVisible(false);
+            Board.field = null;
+            Board.cellValues = null;
+            Board.collectedTreasure = 0;
+            
+            getContentPane().removeAll(); // Remove the all cell covers (Ie the board)
+
+            // Refresh frame after removing board
+            revalidate();
+            repaint();
+
+            mainMenu(); 
+        });
+    }
+    
     /**
      * This will initialize a new JPanel to house the functions of 
      * the load menu. Such as the buttons for each save file, 
@@ -274,7 +388,7 @@ public class Minesweeper extends JFrame {
             saveFileButton.addActionListener((ActionEvent e) -> {
                 System.out.println("Loading save file: " + fileName);
                 ArrayList<Integer> save = Utilities.loadBoard(fileName);
-                initUI(save);
+                initUI(save, 0);
             });
             
             saveFilePanel.add(saveFileButton); // Add button to panel
@@ -437,7 +551,7 @@ public class Minesweeper extends JFrame {
      *              method. This is a special case where we want to remove
      *              everything from the content frame before creating.
     */
-    private void initUI(ArrayList<Integer> save) {
+    private void initUI(ArrayList<Integer> save, int difficultyLevel) {
 
         System.out.println("Minesweeper.initUI(): Initializing UI...");
 
@@ -460,7 +574,7 @@ public class Minesweeper extends JFrame {
         
 
         // Add elements to panel
-        gamePanel.add(new Board(statusbar, statusbar2, save));
+        gamePanel.add(new Board(statusbar, statusbar2, save, difficultyLevel));
         gamePanel.add(statusbar);
         gamePanel.add(Box.createVerticalStrut(15)); // Add spacing between buttons vertically
         gamePanel.add(statusbar2);

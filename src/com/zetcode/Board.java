@@ -69,7 +69,7 @@ public class Board extends JPanel {
     private final int DRAW_WRONG_MARK = 12;
     private final int DRAW_TREASURE = 13;
 
-    // Game mines couunt
+    // Game mines count
     private final int N_MINES = 40;
     public static int N_ROWS = 16;
     public static int N_COLS = 16;
@@ -83,6 +83,7 @@ public class Board extends JPanel {
     private boolean inGame; // Tracks if the game is ongoing
     private int minesLeft;  // Number of mines left to be marked
     private Image[] img;    // Stores images for different cell states
+    public static int difficultyLevel;
 
     private int allCells;   // Total number of cells on the board
     private final JLabel statusbar; // Label to display game status
@@ -275,20 +276,37 @@ public class Board extends JPanel {
      *                      that it can be changed to show the number
      *                      of flags that are left during the game.
      */
-    public Board(JLabel statusbar, JLabel statusbar2, ArrayList<Integer> save) {
+    public Board(JLabel statusbar, JLabel statusbar2, ArrayList<Integer> save, int difficultyLevel) {
 
         this.statusbar = statusbar;
         this.statusbar2 = statusbar2;
+        this.difficultyLevel = difficultyLevel;
         collectedTreasure = 0;
+        
         if (save != null) {
         	collectedTreasure = save.get(save.size() - 1);
-        	N_COLS = save.get(save.size() - 2);
+        	this.difficultyLevel = save.get(save.size() - 2);
         	N_ROWS = (save.size() - 2) / N_COLS;
         	field = new Cell[save.size() - 2];
         	for (int i = 0; i < save.size() - 2; i++) {
         		Cell cell = new Cell(save.get(i));
         		field[i] = cell;
         	}
+        }
+ 
+        if (difficultyLevel == 1) {
+        	
+        	// Default values
+        }
+        else if (difficultyLevel == 2) {
+        	
+        	N_COLS = 16;
+        	N_ROWS = 16;
+        }
+        else if (difficultyLevel == 3) {
+        	
+        	N_COLS = 30;
+        	N_ROWS = 16;
         }
         
         initBoard(); 

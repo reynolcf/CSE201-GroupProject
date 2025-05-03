@@ -195,7 +195,7 @@ public class Utilities {
 			FileWriter write = new FileWriter(newSaveFile);
 			write.append("Board Name: " + saveName + "\n");
 			// TODO fix when difficulty is implemented
-			write.append("Difficulty: N/A\n");
+			write.append("Difficulty:" + Board.difficultyLevel + "\n");
 			
 			write.append("Treasure Remaining:" + treasure + "\n");
 
@@ -270,8 +270,11 @@ public class Utilities {
 		                scanner.nextLine();
 		            }
 		            // TODO this skips the difficulty level
+		            int difficulty = 0;
 		            if (scanner.hasNextLine()) {
-		                scanner.nextLine();
+		            	String difficultyLevel = scanner.nextLine();
+		            	int index = difficultyLevel.indexOf(':');
+		            	difficulty = Integer.parseInt(difficultyLevel.substring(index + 1));
 		            }
 		            if (scanner.hasNextLine()) {
 		            	String treasure = scanner.nextLine();
@@ -298,7 +301,7 @@ public class Utilities {
 		                    boardData.add(Integer.parseInt(token.trim()));
 		                }
 		            }
-		            boardData.add(numCols);
+		            boardData.add(difficulty);
 		            boardData.add(treasureRemaining);
 		            scanner.close();
 		            return boardData;
