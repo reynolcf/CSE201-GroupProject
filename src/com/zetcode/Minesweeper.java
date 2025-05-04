@@ -41,6 +41,8 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -92,7 +94,6 @@ public class Minesweeper extends JFrame {
         getContentPane().setLayout(new BorderLayout());
         
 		pack();
-		
 		
         System.out.println("Minesweeper.initFrame(): JFrame initialized.");
 
@@ -257,6 +258,7 @@ public class Minesweeper extends JFrame {
 
         // Initialize gui elements
         JLabel levelText = new JLabel("Level Selection"); // Display pause text at top
+        JLabel bsText = new JLabel("Board size: ");
         JButton beginnerButton = new JButton("Beginner"); // Resume button to return to game
         JButton intermediateButton = new JButton("Intermediate"); // Save button to save the current board
         JButton expertButton = new JButton("Expert"); // Return button to return to the main menu
@@ -264,6 +266,7 @@ public class Minesweeper extends JFrame {
 
         // Align buttons to the center of the panel
         levelText.setAlignmentX(CENTER_ALIGNMENT);
+        bsText.setAlignmentX(CENTER_ALIGNMENT);
         beginnerButton.setAlignmentX(CENTER_ALIGNMENT);
         intermediateButton.setAlignmentX(CENTER_ALIGNMENT);
         expertButton.setAlignmentX(CENTER_ALIGNMENT);
@@ -272,8 +275,8 @@ public class Minesweeper extends JFrame {
         // Add elements to panel
         levelPanel.add(Box.createVerticalStrut(15)); // Add spacing between buttons vertically
         levelPanel.add(levelText);
-        levelPanel.add(Box.createVerticalStrut(185));
-        levelPanel.add(Box.createVerticalStrut(5));
+        levelPanel.add(bsText);
+        levelPanel.add(Box.createVerticalStrut(175));
         levelPanel.add(beginnerButton);
         levelPanel.add(Box.createVerticalStrut(5));
         levelPanel.add(intermediateButton);
@@ -353,6 +356,43 @@ public class Minesweeper extends JFrame {
             repaint();
 
             mainMenu(); 
+        });
+        
+        // Make the numbers for board size change when mouse hover
+        beginnerButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                bsText.setText("Board size: 8 x 8    ");
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+            	bsText.setText("Board size:             ");
+            }
+        });
+        
+        intermediateButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                bsText.setText("Board size: 16 x 16");
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+            	bsText.setText("Board size:             ");
+            }
+        });
+        
+        expertButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                bsText.setText("Board size: 30 x 16");
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+            	bsText.setText("Board size:             ");
+            }
         });
     }
     
@@ -552,47 +592,94 @@ public class Minesweeper extends JFrame {
      *              everything from the content frame before creating.
     */
     private void initUI(ArrayList<Integer> save, int difficultyLevel) {
+    	
+    	System.out.println("Minesweeper.initUI(): Initializing UI...");
 
-        System.out.println("Minesweeper.initUI(): Initializing UI...");
+        getContentPane().removeAll(); // Clear window
 
-        getContentPane().removeAll(); // Remove all previous content from frame
+        // Main container for split layout 
+        JPanel containerPanel = new JPanel(new BorderLayout());
+        
+        int boardWidth = Board.BOARD_WIDTH;
+        int boardHeight = Board.BOARD_HEIGHT;
 
-        // Create panel to store components
+        int inputPanelWidth = 100;
+        int padding = 40;
+
+        int totalWidth = boardWidth + inputPanelWidth + padding;
+        int totalHeight = boardHeight + 150;
+
+        setSize(totalWidth, totalHeight);
+        setMinimumSize(new Dimension(totalWidth, totalHeight));
+
+        // -------- LEFT SIDE: Coordinate Input --------
+        JPanel inputPanel = new JPanel();
+        inputPanel.setLayout(new BoxLayout(inputPanel, BoxLayout.Y_AXIS));
+        inputPanel.setPreferredSize(new Dimension(100, WINDOW_HEIGHT));
+
+        JLabel inputLabel = new JLabel("Enter X,Y:");
+        JTextField coordinateInput = new JTextField();
+        coordinateInput.setMaximumSize(new Dimension(80, 25));
+        JButton selectMineButton = new JButton("Select");
+
+        inputLabel.setAlignmentX(CENTER_ALIGNMENT);
+        coordinateInput.setAlignmentX(CENTER_ALIGNMENT);
+        selectMineButton.setAlignmentX(CENTER_ALIGNMENT);
+
+        inputPanel.add(Box.createVerticalStrut(20));
+        inputPanel.add(inputLabel);
+        inputPanel.add(Box.createVerticalStrut(5));
+        inputPanel.add(coordinateInput);
+        inputPanel.add(Box.createVerticalStrut(5));
+        inputPanel.add(selectMineButton);
+
+        // -------- CENTER: Game Panel --------
         JPanel gamePanel = new JPanel();
         gamePanel.setLayout(new BoxLayout(gamePanel, BoxLayout.Y_AXIS));
 
-        // Initialize gui elements
-        statusbar = new JLabel(""); // Displays flag count, game won, game lost
+        statusbar = new JLabel("");
         statusbar2 = new JLabel("");
-        JButton pauseButton = new JButton("Pause"); // Back button to return to main menu
-        
+        JButton pauseButton = new JButton("Pause");
 
-        // Align elements in the center
         statusbar.setAlignmentX(CENTER_ALIGNMENT);
-        statusbar.setAlignmentX(CENTER_ALIGNMENT);
+        statusbar2.setAlignmentX(CENTER_ALIGNMENT);
         pauseButton.setAlignmentX(CENTER_ALIGNMENT);
-        
 
-        // Add elements to panel
-        gamePanel.add(new Board(statusbar, statusbar2, save, difficultyLevel, this));
+        Board board = new Board(statusbar, statusbar2, save, difficultyLevel, this);
+        gamePanel.add(board);
         gamePanel.add(statusbar);
-        gamePanel.add(Box.createVerticalStrut(15)); // Add spacing between buttons vertically
+        gamePanel.add(Box.createVerticalStrut(15));
         gamePanel.add(statusbar2);
-        gamePanel.add(Box.createVerticalStrut(35)); // Add spacing between buttons vertically
+        gamePanel.add(Box.createVerticalStrut(35));
         gamePanel.add(pauseButton);
-        gamePanel.add(Box.createVerticalStrut(15)); // Add spacing between buttons vertically
+        gamePanel.add(Box.createVerticalStrut(15));
 
-        // Add panel to frame
-        getContentPane().add(gamePanel);
+        // Add both panels to main container
+        containerPanel.add(inputPanel, BorderLayout.WEST);
+        containerPanel.add(gamePanel, BorderLayout.CENTER);
 
-        // Refresh frame after adding panel
+        getContentPane().add(containerPanel);
+
+        // Refresh GUI
         revalidate();
         repaint();
-        
-        // Button actions
-        pauseButton.addActionListener((ActionEvent e) -> { // pauseButton action
 
-            pauseMenu();
+        // Button Actions
+        pauseButton.addActionListener(e -> pauseMenu());
+
+        // Select mine via coordinates
+        selectMineButton.addActionListener(e -> {
+        	
+            String input = coordinateInput.getText();
+            
+            try {
+                String[] parts = input.split(",");
+                int x = Integer.parseInt(parts[0].trim());
+                int y = Integer.parseInt(parts[1].trim());
+                board.revealCellAt(x, y); // <-- You must implement this method in your Board class
+            } catch (Exception ex) {
+                statusbar.setText("Invalid format. Use: x,y");
+            }
         });
 
         System.out.println("Minesweeper.initUI(): UI initialized.");
