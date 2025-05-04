@@ -71,6 +71,13 @@ public class Utilities {
 	 * 				the names of the save files.
 	 */
 	// TODO remove unnecessary check for the "-save.csv", already checked in helper method isValidFile()
+	// Can we replace lines 119 - 126 with:
+	/**
+ 	 * if (isValidSaveFile(file)) {
+	 * resultName = currentName.substring(0, currentName.length() - 9); // Remove the -save.csv
+	 * resultArrayList.add(resultName);
+         * }
+	 */
 	public static ArrayList<String> getSaveFileNames() {
 
 		System.out.println("Utilities.getSaveFileNames(): Getting save file names...");
