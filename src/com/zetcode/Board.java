@@ -52,7 +52,7 @@ public class Board extends JPanel {
 
     // Constants for the game settings
     private final int NUM_IMAGES = 13;
-    private final int CELL_SIZE = 15;
+    private final static int CELL_SIZE = 15;
 
     // Constants for the cell states
    /** private final int COVER_FOR_CELL = 10;
@@ -75,8 +75,8 @@ public class Board extends JPanel {
     public static int N_COLS = 16;
 
     // Game board size
-    public final int BOARD_WIDTH = N_COLS * CELL_SIZE + 1;
-    public final int BOARD_HEIGHT = N_ROWS * CELL_SIZE + 1;
+    public static final int BOARD_WIDTH = N_COLS * CELL_SIZE + 1;
+    public static final int BOARD_HEIGHT = N_ROWS * CELL_SIZE + 1;
 
     // Game state variables
     
@@ -94,6 +94,92 @@ public class Board extends JPanel {
 /*********************************************************************************************************************/
     
     // New helper methods
+    /**
+     * Programmatically reveals the cell at the given (x, y) coordinates.
+     * Used by the text-input field from the Minesweeper frame.
+     *
+     * @param x The column index (0-based)
+     * @param y The row index (0-based)
+     */
+    public void revealCellAt(int x, int y) {
+    	
+        if (!inGame) {
+            statusbar.setText("Game is over. Start a new game.");
+            return;
+        }
+
+        if (x < 0 || x >= N_COLS || y < 0 || y >= N_ROWS) {
+            statusbar.setText("Invalid coordinates");
+            return;
+        }
+
+        int index = y * N_COLS + x;
+
+        if (!field[index].isCovered() || field[index].isFlagged()) {
+            statusbar.setText("Cell already revealed or flagged");
+            return;
+        }
+
+        field[index].setIsCovered(false);
+
+        if (field[index].isMine()) {
+            checkTreasureAmount();
+        } 
+        else if (field[index].isEmptyCell()) {
+            find_empty_cells(index);
+        } 
+        else if (field[index].isTreasure()) {
+            collectedTreasure++;
+            statusbar2.setText("Treasure collected: " + collectedTreasure);
+        }
+
+        repaint();
+    }
+    
+    /**
+     * Programmatically flags the cell at the given (x, y) coordinates.
+     * Used by the text-input field from the Minesweeper frame.
+     *
+     * @param x The column index (0-based)
+     * @param y The row index (0-based)
+     */
+    public void flagCellAt(int x, int y) {
+    	
+        if (!inGame) {
+            statusbar.setText("Game is over. Start a new game.");
+            return;
+        }
+
+        if (x < 0 || x >= N_COLS || y < 0 || y >= N_ROWS) {
+            statusbar.setText("Invalid coordinates");
+            return;
+        }
+
+        int index = y * N_COLS + x;
+
+        if (!field[index].isCovered()) {
+            statusbar.setText("Cell already revealed");
+            return;
+        }
+
+        if (!field[index].isFlagged()) {
+            if (minesLeft > 0) {
+                field[index].setIsFlagged(true);
+                minesLeft--;
+                statusbar.setText("Mines remaining: " + minesLeft);
+            } 
+            else {
+                statusbar.setText("No marks left");
+            }
+        } 
+        else {
+            field[index].setIsFlagged(false);
+            minesLeft++;
+            statusbar.setText("Mines remaining: " + minesLeft);
+        }
+
+        repaint();
+    }
     
     /**
      * This method is run when the user left clicks on a mine, and checks if there
@@ -276,7 +362,7 @@ public class Board extends JPanel {
      *                      that it can be changed to show the number
      *                      of flags that are left during the game.
      */
-    public Board(JLabel statusbar, JLabel statusbar2, ArrayList<Integer> save, int difficultyLevel, Minesweeper window) {
+    public Board(JLabel statusbar, JLabel statusbar2, ArrayList<Integer> save, int difficultyLevel, Minesweeper window, int interfaceType) {
 
         this.statusbar = statusbar;
         this.statusbar2 = statusbar2;
@@ -293,9 +379,15 @@ public class Board extends JPanel {
         		field[i] = cell;
         	}
         }
+        
+        int textOffset = 0;	// Offset for the text-based text box
+        
+        if (interfaceType == 2) { // Add padding if the text-based interface
+        	textOffset = 100;
+        }
  
         if (this.difficultyLevel == 1) {
-        	window.setSize(200, 300);
+        	window.setSize(200 + textOffset, 300);
         	N_COLS = 8;
         	N_ROWS = 8;
         	N_MINES = 10;
@@ -303,14 +395,14 @@ public class Board extends JPanel {
         	// Default values
         }
         else if (this.difficultyLevel == 2) {
-        	window.setSize(255, 400);
+        	window.setSize(255 + textOffset, 400);
         	N_COLS = 16;
         	N_ROWS = 16;
         	N_MINES = 40;
         	NUM_TREASURE = 8;
         }
         else if (this.difficultyLevel == 3) {
-        	window.setSize(465, 400);
+        	window.setSize(465 + textOffset, 400);
         	N_COLS = 30;
         	N_ROWS = 16;
         	N_MINES = 90;
