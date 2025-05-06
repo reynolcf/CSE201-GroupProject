@@ -43,6 +43,7 @@ public class Board extends JPanel {
 	private int NUM_TREASURE = 20; // Number of treasure to be generated, must be 'less than number of mines'
 	private final JLabel statusbar2;
 	public static Cell[] field = null;    // Stores all the cells in the game
+	public static int UI;
 	
 	
 	
@@ -52,7 +53,7 @@ public class Board extends JPanel {
 
     // Constants for the game settings
     private final int NUM_IMAGES = 13;
-    private final static int CELL_SIZE = 15;
+    private final int CELL_SIZE = 15;
 
     // Constants for the cell states
    /** private final int COVER_FOR_CELL = 10;
@@ -75,12 +76,12 @@ public class Board extends JPanel {
     public static int N_COLS = 16;
 
     // Game board size
-    public static final int BOARD_WIDTH = N_COLS * CELL_SIZE + 1;
-    public static final int BOARD_HEIGHT = N_ROWS * CELL_SIZE + 1;
+    public final int BOARD_WIDTH = N_COLS * CELL_SIZE + 1;
+    public final int BOARD_HEIGHT = N_ROWS * CELL_SIZE + 1;
 
     // Game state variables
     
-    private boolean inGame; // Tracks if the game is ongoing
+    public boolean inGame; // Tracks if the game is ongoing
     private int minesLeft;  // Number of mines left to be marked
     private Image[] img;    // Stores images for different cell states
     public static int difficultyLevel;
@@ -94,92 +95,6 @@ public class Board extends JPanel {
 /*********************************************************************************************************************/
     
     // New helper methods
-    /**
-     * Programmatically reveals the cell at the given (x, y) coordinates.
-     * Used by the text-input field from the Minesweeper frame.
-     *
-     * @param x The column index (0-based)
-     * @param y The row index (0-based)
-     */
-    public void revealCellAt(int x, int y) {
-    	
-        if (!inGame) {
-            statusbar.setText("Game is over. Start a new game.");
-            return;
-        }
-
-        if (x < 0 || x >= N_COLS || y < 0 || y >= N_ROWS) {
-            statusbar.setText("Invalid coordinates");
-            return;
-        }
-
-        int index = y * N_COLS + x;
-
-        if (!field[index].isCovered() || field[index].isFlagged()) {
-            statusbar.setText("Cell already revealed or flagged");
-            return;
-        }
-
-        field[index].setIsCovered(false);
-
-        if (field[index].isMine()) {
-            checkTreasureAmount();
-        } 
-        else if (field[index].isEmptyCell()) {
-            find_empty_cells(index);
-        } 
-        else if (field[index].isTreasure()) {
-            collectedTreasure++;
-            statusbar2.setText("Treasure collected: " + collectedTreasure);
-        }
-
-        repaint();
-    }
-    
-    /**
-     * Programmatically flags the cell at the given (x, y) coordinates.
-     * Used by the text-input field from the Minesweeper frame.
-     *
-     * @param x The column index (0-based)
-     * @param y The row index (0-based)
-     */
-    public void flagCellAt(int x, int y) {
-    	
-        if (!inGame) {
-            statusbar.setText("Game is over. Start a new game.");
-            return;
-        }
-
-        if (x < 0 || x >= N_COLS || y < 0 || y >= N_ROWS) {
-            statusbar.setText("Invalid coordinates");
-            return;
-        }
-
-        int index = y * N_COLS + x;
-
-        if (!field[index].isCovered()) {
-            statusbar.setText("Cell already revealed");
-            return;
-        }
-
-        if (!field[index].isFlagged()) {
-            if (minesLeft > 0) {
-                field[index].setIsFlagged(true);
-                minesLeft--;
-                statusbar.setText("Mines remaining: " + minesLeft);
-            } 
-            else {
-                statusbar.setText("No marks left");
-            }
-        } 
-        else {
-            field[index].setIsFlagged(false);
-            minesLeft++;
-            statusbar.setText("Mines remaining: " + minesLeft);
-        }
-
-        repaint();
-    }
     
     /**
      * This method is run when the user left clicks on a mine, and checks if there
@@ -348,6 +263,105 @@ public class Board extends JPanel {
     	
     }
     
+    public String drawNumber(int index) {
+    	if (field[index].isMine() && !inGame) {
+    		return "*";
+    	} else if (field[index].isFlagged()) {
+    		return "F";
+    	} else if(field[index].isCovered()) {
+    		return "0";
+    	} else if (field[index].isMine()) {
+    		return "*";
+    	} else if (field[index].isFlagged()) {
+    		return "9";
+    	} else if (field[index].isEmptyCell()) {
+    		return "-";
+    	} else {
+    		return "" + field[index].number();
+    	}
+    	
+    }
+    
+    
+    public void clickSimulator(int x, int y, int clickType) {
+    	System.out.println("Board.mousePressed(MouseEvent e): Checking if mouse pressed...");
+
+        
+
+        
+        
+        int index = (y * N_COLS) + x;
+
+        boolean doRepaint = false;
+
+        if (!inGame) {
+
+            newGame();
+            repaint();
+        }
+
+        if ((x < N_COLS * CELL_SIZE) && (y < N_ROWS * CELL_SIZE)) {
+
+            if (clickType == 2) { // THIS IS THE RIGHT CLICK, FOR ADDING FLAG
+
+                if (field[index].isCovered()) {
+
+                    doRepaint = true;
+
+                    if (!(field[index].isFlagged())) { // Add flag
+
+                        if (minesLeft > 0) {
+                            field[index].setIsFlagged(true);
+                            minesLeft--;
+                            statusbar.setText("Mines remaining: " + Integer.toString(minesLeft));
+                        } else {
+                            statusbar.setText("No marks left");
+                        }
+                    } else { // Remove flag
+
+                        field[index].setIsFlagged(false);
+                        minesLeft++;
+                        String msg = Integer.toString(minesLeft);
+                        statusbar.setText("Mines remaining" + msg);
+                    }
+                }
+
+            } else { // THIS IS THE LEFT CLICK, FOR UNCOVERING
+
+                if (field[index].isCoveredAndFlaggedMine()) {
+
+                    return;
+                }
+
+                if ((field[index].isCovered())
+                        && (!field[index].isCoveredAndFlaggedMine())) {
+
+                    field[index].setIsCovered(false);
+                    doRepaint = true;
+
+                    if (field[index].isMine()) {
+                        checkTreasureAmount();
+                    }
+
+                    if (field[index].isEmptyCell()) {
+                        find_empty_cells(index);
+                    } else if (field[index].isTreasure()) {
+                    	collectedTreasure++;
+                    }
+                    
+                    statusbar2.setText("Treasure collected: " + Integer.toString(collectedTreasure));
+                    
+                }
+            }
+
+            if (doRepaint) {
+                repaint();
+            }
+        }
+
+        System.out.println("Board.mousePressed(MouseEvent e): Mouse check completed.");
+    }
+    
     
     
     
@@ -362,11 +376,12 @@ public class Board extends JPanel {
      *                      that it can be changed to show the number
      *                      of flags that are left during the game.
      */
-    public Board(JLabel statusbar, JLabel statusbar2, ArrayList<Integer> save, int difficultyLevel, Minesweeper window, int interfaceType) {
+    public Board(JLabel statusbar, JLabel statusbar2, ArrayList<Integer> save, int difficultyLevel, Minesweeper window, int UI) {
 
         this.statusbar = statusbar;
         this.statusbar2 = statusbar2;
         this.difficultyLevel = difficultyLevel;
+        this.UI = UI;
         collectedTreasure = 0;
         
         if (save != null) {
@@ -379,15 +394,9 @@ public class Board extends JPanel {
         		field[i] = cell;
         	}
         }
-        
-        int textOffset = 0;	// Offset for the text-based text box
-        
-        if (interfaceType == 2) { // Add padding if the text-based interface
-        	textOffset = 100;
-        }
  
         if (this.difficultyLevel == 1) {
-        	window.setSize(200 + textOffset, 300);
+        	window.setSize(250, 400);
         	N_COLS = 8;
         	N_ROWS = 8;
         	N_MINES = 10;
@@ -395,14 +404,14 @@ public class Board extends JPanel {
         	// Default values
         }
         else if (this.difficultyLevel == 2) {
-        	window.setSize(255 + textOffset, 400);
+        	window.setSize(UI == 2? 280 : 255, 500);
         	N_COLS = 16;
         	N_ROWS = 16;
         	N_MINES = 40;
         	NUM_TREASURE = 8;
         }
         else if (this.difficultyLevel == 3) {
-        	window.setSize(465 + textOffset, 400);
+        	window.setSize(UI == 2? 490 : 465, 500);
         	N_COLS = 30;
         	N_ROWS = 16;
         	N_MINES = 90;
@@ -439,7 +448,10 @@ public class Board extends JPanel {
 
         System.out.println("Board.initBoard(): Board initialized.");
 
-        addMouseListener(new MinesAdapter());
+        if (UI == 1) {
+        	addMouseListener(new MinesAdapter());
+        }
+        
         newGame();
     }
     
@@ -600,11 +612,31 @@ public class Board extends JPanel {
                 if (cell > 12) {
                 	System.out.println("(" + i + ", " + j + ")");
                 }
-                int padding = difficultyLevel == 1? 37 : 0;
-                g.drawImage(img[cell], (j * CELL_SIZE) + padding,
+                if (UI == 1) {
+                	g.drawImage(img[cell], (j * CELL_SIZE),
                         (i * CELL_SIZE), this);
+                } else {
+                	int x = j * CELL_SIZE;
+                	int y = i * CELL_SIZE;
+                	g.clearRect(x, y, CELL_SIZE, CELL_SIZE);
+                	g.drawString(drawNumber(i * N_COLS + j), (j * CELL_SIZE) + CELL_SIZE / 3, (i * CELL_SIZE) + 2 * CELL_SIZE / 3);
+                }
+                
             }
         }
+        if (UI == 2) {
+        	for (int i = 1; i <= N_ROWS; i++) {
+        		g.drawString(Integer.toString(i), ((N_COLS) * CELL_SIZE) + CELL_SIZE / 3, ((i - 1) * CELL_SIZE) + 2 * CELL_SIZE / 3);
+        	}
+        	for (int i = 1; i <= N_COLS; i++) {
+        		int num = i < 10 ? ((i - 1) * CELL_SIZE) + CELL_SIZE / 3 : ((i - 1) * CELL_SIZE) + CELL_SIZE / 6;
+        		g.drawString(Integer.toString(i), num, (((N_ROWS) * CELL_SIZE) + 2 * CELL_SIZE / 3) + 5);
+        	}
+        }
+        
+        
+        g.drawLine(N_COLS * CELL_SIZE, 0, N_COLS * CELL_SIZE, N_ROWS * CELL_SIZE);
+        g.drawLine(0, N_ROWS * CELL_SIZE, N_COLS * CELL_SIZE, N_ROWS * CELL_SIZE);
 
         if (uncover == 0 && inGame) {
 
@@ -633,84 +665,18 @@ public class Board extends JPanel {
         @Override
         public void mousePressed(MouseEvent e) {
 
-            System.out.println("Board.mousePressed(MouseEvent e): Checking if mouse pressed...");
-
-            int x = e.getX();
+        	int x = e.getX();
             int y = e.getY();
-
+            int type = e.getButton() == MouseEvent.BUTTON3 ? 2 : 1;
             int cCol = x / CELL_SIZE;
             int cRow = y / CELL_SIZE;
-            
-            int index = (cRow * N_COLS) + cCol;
-
-            boolean doRepaint = false;
-
-            if (!inGame) {
-
-                newGame();
-                repaint();
+            cCol = cCol >= 0 ? cCol : 0;
+            if (cCol < 0 || cCol >= N_COLS || cRow < 0 || cRow >= N_ROWS) {
+                return; // Ignore clicks outside the board
             }
-
-            if ((x < N_COLS * CELL_SIZE) && (y < N_ROWS * CELL_SIZE)) {
-
-                if (e.getButton() == MouseEvent.BUTTON3) { // THIS IS THE RIGHT CLICK, FOR ADDING FLAG
-
-                    if (field[index].isCovered()) {
-
-                        doRepaint = true;
-
-                        if (!(field[index].isFlagged())) { // Add flag
-
-                            if (minesLeft > 0) {
-                                field[index].setIsFlagged(true);
-                                minesLeft--;
-                                statusbar.setText("Mines remaining: " + Integer.toString(minesLeft));
-                            } else {
-                                statusbar.setText("No marks left");
-                            }
-                        } else { // Remove flag
-
-                            field[index].setIsFlagged(false);
-                            minesLeft++;
-                            String msg = Integer.toString(minesLeft);
-                            statusbar.setText("Mines remaining" + msg);
-                        }
-                    }
-
-                } else { // THIS IS THE LEFT CLICK, FOR UNCOVERING
-
-                    if (field[index].isCoveredAndFlaggedMine()) {
-
-                        return;
-                    }
-
-                    if ((field[index].isCovered())
-                            && (!field[index].isCoveredAndFlaggedMine())) {
-
-                        field[index].setIsCovered(false);
-                        doRepaint = true;
-
-                        if (field[index].isMine()) {
-                            checkTreasureAmount();
-                        }
-
-                        if (field[index].isEmptyCell()) {
-                            find_empty_cells(index);
-                        } else if (field[index].isTreasure()) {
-                        	collectedTreasure++;
-                        }
-                        
-                        statusbar2.setText("Treasure collected: " + Integer.toString(collectedTreasure));
-                        
-                    }
-                }
-
-                if (doRepaint) {
-                    repaint();
-                }
+            if (inGame) {
+            	clickSimulator(cCol, cRow, type);
             }
-
-            System.out.println("Board.mousePressed(MouseEvent e): Mouse check completed.");
         }
     }
 }
