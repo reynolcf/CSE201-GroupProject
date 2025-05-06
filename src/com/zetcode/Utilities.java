@@ -27,7 +27,6 @@ public class Utilities {
 	 * 
 	 * @return		count: The number of valid save files in the saves folder
 	 */
-	// TODO create a isValidSaveFile() to check the file extension (-save.csv) before counting
 	public static int countSaveFiles() {
 
 		System.out.println("Utilities.countSaveFiles(): Counting save files...");
@@ -72,12 +71,12 @@ public class Utilities {
 	 */
 	// TODO remove unnecessary check for the "-save.csv", already checked in helper method isValidFile()
 	// Can we replace lines 119 - 126 with:
-	/**
- 	 * if (isValidSaveFile(file)) {
-	 * resultName = currentName.substring(0, currentName.length() - 9); // Remove the -save.csv
-	 * resultArrayList.add(resultName);
-         * }
-	 */
+ 	/**
+  	 * if (isValidSaveFile(file)) {
+ 	 * resultName = currentName.substring(0, currentName.length() - 9); // Remove the -save.csv
+ 	 * resultArrayList.add(resultName);
+          * }
+ 	 */
 	public static ArrayList<String> getSaveFileNames() {
 
 		System.out.println("Utilities.getSaveFileNames(): Getting save file names...");
