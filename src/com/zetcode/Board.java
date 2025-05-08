@@ -385,11 +385,12 @@ public class Board extends JPanel {
         collectedTreasure = 0;
         
         if (save != null) {
-        	collectedTreasure = save.get(save.size() - 1);
-        	this.difficultyLevel = save.get(save.size() - 2);
-        	N_ROWS = (save.size() - 2) / N_COLS;
-        	field = new Cell[save.size() - 2];
-        	for (int i = 0; i < save.size() - 2; i++) {
+        	this.UI = save.get(save.size() - 1);
+        	collectedTreasure = save.get(save.size() - 2);
+        	this.difficultyLevel = save.get(save.size() - 3);
+        	N_ROWS = (save.size() - 3) / N_COLS;
+        	field = new Cell[save.size() - 3];
+        	for (int i = 0; i < save.size() - 3; i++) {
         		Cell cell = new Cell(save.get(i));
         		field[i] = cell;
         	}

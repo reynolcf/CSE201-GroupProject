@@ -18,7 +18,10 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Scanner;
+import java.util.Set;
 
 public class Utilities {
 
@@ -180,7 +183,7 @@ public class Utilities {
 	 * 				The implementation now is completely correct so do not remove it.
 	 */
     @SuppressWarnings("ConvertToTryWithResources")
-	public static void saveBoard(Cell[] field, String saveName, int boardWidth, int treasure) {
+	public static void saveBoard(Cell[] field, String saveName, int boardWidth, int treasure, int UI) {
 
 		System.out.println("Utilities.saveBoard(ArrayList<Integer> cellValues, String saveName, int boardWidth): Saving board...");
 		
@@ -204,6 +207,8 @@ public class Utilities {
 			write.append("Difficulty:" + Board.difficultyLevel + "\n");
 			
 			write.append("Treasure Remaining:" + treasure + "\n");
+			
+			write.append("UI type:" + UI + "\n");
 
 			for (int i = 0; i < field.length; i++) {
 
@@ -270,6 +275,7 @@ public class Utilities {
 					File file = new File("src\\saves\\" + loadSaveFileName + "-save.csv");
 					Scanner scanner = new Scanner(file);
 					int treasureRemaining = 0;
+					int UI = 0;
 
 		            // Skip the first line (Board Name)
 		            if (scanner.hasNextLine()) {
@@ -286,6 +292,11 @@ public class Utilities {
 		            	String treasure = scanner.nextLine();
 		            	int index = treasure.indexOf(':');
 		            	treasureRemaining = Integer.parseInt(treasure.substring(index + 1));
+		            }
+		            if (scanner.hasNextLine()) {
+		            	String UIstr = scanner.nextLine();
+		            	int index = UIstr.indexOf(':');
+		            	UI = Integer.parseInt(UIstr.substring(index + 1));
 		            }
 		            int numCols = 0;
 		            ArrayList<Integer> boardData = new ArrayList<>();
@@ -309,6 +320,7 @@ public class Utilities {
 		            }
 		            boardData.add(difficulty);
 		            boardData.add(treasureRemaining);
+		            boardData.add(UI);
 		            scanner.close();
 		            return boardData;
 				}
@@ -323,4 +335,125 @@ public class Utilities {
 		System.out.println("Utilities.loadBoard(): Board loaded.");
 		return null;
 	}
+	
+	
+	
+	public static ArrayList<Integer> loadTestCSV(String filename) {
+		ArrayList<Integer> board = new ArrayList<>();
+
+		try (Scanner scanner = new Scanner(new File(filename))) {
+			int row = 0;
+			while (scanner.hasNextLine() && row < 8) {
+				String[] tokens = scanner.nextLine().split(",");
+				if (tokens.length != 8)
+					return null;
+				for (int col = 0; col < 8; col++) {
+					int val = Integer.parseInt(tokens[col].trim());
+					if (val != 0 && val != 1 && val != 2) {
+						return null;
+					}
+						
+					board.add(val);
+				}
+				row++;
+			}
+			if (row != 8)
+				return null;
+		} catch (Exception e) {
+			return null;
+		}
+
+		return board;
+	}
+	
+	
+	  public static boolean isValidTestBoard(List<Integer> board) {
+	        if (board == null || board.size() != 64) return false;
+
+	        List<int[]> mines = new ArrayList<>();
+	        List<int[]> treasures = new ArrayList<>();
+
+	        // Collect positions of mines and treasures
+	        for (int r = 0; r < 8; r++) {
+	            for (int c = 0; c < 8; c++) {
+	                int val = board.get(r * 8 + c);
+	                if (val == 1) mines.add(new int[]{r, c});
+	                else if (val == 2) treasures.add(new int[]{r, c});
+	            }
+	        }
+
+	        if (mines.size() != 10 || treasures.size() > 9) return false;
+
+	        // Try all combinations of 8 mines out of 10 to find a valid distinct-row-and-col non-adjacent set
+	        for (int i = 0; i < 10; i++) {
+	            for (int j = i + 1; j < 10; j++) {
+	                List<int[]> first8 = new ArrayList<>();
+	                for (int k = 0; k < 10; k++) {
+	                    if (k != i && k != j) first8.add(mines.get(k));
+	                }
+	                
+	                if (!hasUniqueRowsAndCols(first8)) continue;
+	                if (!areFirst8NonAdjacent(first8)) continue;
+	                if (!containsDiagonal(first8)) continue;
+
+	                int[] ninth = mines.get(i);
+	                int[] tenth = mines.get(j);
+
+	                if (!isAdjacentToAny(ninth, first8)) continue;
+	                if (!isIsolatedFromAll(tenth, first8, ninth)) continue;
+
+	                return true; // All conditions met
+	            }
+	        }
+
+	        return false;
+	    }
+
+	    private static boolean hasUniqueRowsAndCols(List<int[]> positions) {
+	        Set<Integer> rows = new HashSet<>();
+	        Set<Integer> cols = new HashSet<>();
+	        for (int[] pos : positions) {
+	            if (!rows.add(pos[0]) || !cols.add(pos[1])) return false;
+	        }
+	        return true;
+	    }
+
+	    private static boolean areFirst8NonAdjacent(List<int[]> positions) {
+	        for (int i = 0; i < positions.size(); i++) {
+	            for (int j = i + 1; j < positions.size(); j++) {
+	                int[] a = positions.get(i), b = positions.get(j);
+	                if (a[0] == b[0] || a[1] == b[1]) return false; // same row or column
+	            }
+	        }
+	        return true;
+	    }
+
+	    private static boolean containsDiagonal(List<int[]> positions) {
+	        for (int[] pos : positions) {
+	            if (pos[0] == pos[1]) return true;
+	        }
+	        return false;
+	    }
+
+	    private static boolean isAdjacentToAny(int[] target, List<int[]> others) {
+	        for (int[] m : others) {
+	            if (m[0] == target[0] || m[1] == target[1]) return true;
+	        }
+	        return false;
+	    }
+
+	    private static boolean isIsolatedFromAll(int[] target, List<int[]> others, int[] alsoCheck) {
+	        for (int[] m : others) {
+	            if (isTouching(target, m)) return false;
+	        }
+	        return !isTouching(target, alsoCheck);
+	    }
+
+	    private static boolean isTouching(int[] a, int[] b) {
+	        return Math.abs(a[0] - b[0]) <= 1 && Math.abs(a[1] - b[1]) <= 1 && !(a[0] == b[0] && a[1] == b[1]);
+	    }
+
+
+	
+	
 }

@@ -44,13 +44,16 @@ import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
 import java.util.ArrayList;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
@@ -121,7 +124,7 @@ public class Minesweeper extends JFrame {
         System.out.println("Minesweeper.mainMenu(): Launching main menu...");
 
         // Create components
-        statusbar = new JLabel("Main Menu");
+        statusbar = new JLabel("Minesweeper+");
         JButton newGameButton = new JButton("New Game");
         JButton loadGameButton = new JButton("Load Game");
         JButton testGameButton = new JButton("Test Game");
@@ -226,7 +229,7 @@ public class Minesweeper extends JFrame {
         savePanel.add(Box.createVerticalStrut(5));
         savePanel.add(cancelButton);
 
-        savePanel.setBounds(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT); // Adjust panel dimensions
+        savePanel.setBounds(0, 0, getWidth(), getHeight()); // Adjust panel dimensions
 
         // Add panel to layered frame
         getLayeredPane().add(savePanel, JLayeredPane.POPUP_LAYER);
@@ -244,7 +247,7 @@ public class Minesweeper extends JFrame {
         saveButton.addActionListener((ActionEvent e) -> { // saveButton action
 
             String saveFileName = fileNameInput.getText();
-            Utilities.saveBoard(Board.field, saveFileName, Board.N_COLS, Board.collectedTreasure);
+            Utilities.saveBoard(Board.field, saveFileName, Board.N_COLS, Board.collectedTreasure, Board.UI);
             savePanel.setVisible(false); // Remove savePanel after saving
         });        
     }
@@ -278,7 +281,7 @@ public class Minesweeper extends JFrame {
         levelPanel.add(Box.createVerticalStrut(15)); // Add spacing between buttons vertically
         levelPanel.add(levelText);
         levelPanel.add(bsText);
-        levelPanel.add(Box.createVerticalStrut(185));
+        levelPanel.add(Box.createVerticalStrut(155));
         levelPanel.add(Box.createVerticalStrut(5));
         levelPanel.add(beginnerButton);
         levelPanel.add(Box.createVerticalStrut(5));
@@ -509,7 +512,8 @@ public class Minesweeper extends JFrame {
             saveFileButton.addActionListener((ActionEvent e) -> {
                 System.out.println("Loading save file: " + fileName);
                 ArrayList<Integer> save = Utilities.loadBoard(fileName);
-                initUI(save, 0, 1);
+                getContentPane().removeAll();
+                initUI(save, 0, save.get(save.size() - 1));
             });
             
             saveFilePanel.add(saveFileButton); // Add button to panel
@@ -661,7 +665,106 @@ public class Minesweeper extends JFrame {
 
         // Add panel to the frame
         getContentPane().add(testPanel);
+        
+        while (true) {
+            JFileChooser fileChooser = new JFileChooser();
+            int result = fileChooser.showOpenDialog(this);
+
+
+            if (result == JFileChooser.APPROVE_OPTION) {
+                File file = fileChooser.getSelectedFile();
+                ArrayList<Integer> testGrid = Utilities.loadTestCSV(file.getPath());
+
+
+                if (Utilities.isValidTestBoard(testGrid)) {
+                    getContentPane().removeAll(); // clear menu
+                    testGrid = translateTestBoard(testGrid);
+                    testGrid.add(1);
+                    testGrid.add(0);
+                    testGrid.add(1);
+                    initUI(testGrid, 1, 1); // beginner mode, UI = 3 = testing mode
+                    
+                    revalidate();
+                    repaint();
+                    return;
+                } else {
+                    JOptionPane.showMessageDialog(this, "Invalid test board. Please select another.");
+                }
+            } else {
+                mainMenu(); // fallback if user cancels file picker
+                return;
+            }
+        }
+
     }
+    
+    
+    public ArrayList<Integer> translateTestBoard(ArrayList<Integer> list) {
+    	for (int i = 0; i < list.size(); i++) {
+    		if (list.get(i) == 1) {
+    			list.set(i, 9);
+    		}
+    		if (list.get(i) == 2) {
+    			list.set(i, 100);
+    		}
+    	}
+		for (int i = 0; i < list.size(); i++) {
+			int index;
+			int value;
+			if (list.get(i) == 9) {
+				if (i % 8 != 0) { // Left
+					index = i - 1;
+					value = list.get(index);
+					list.set(index, list.get(index) != 9 ? value + 1 : value);
+				}
+				if (i % 8 != 7) { // Right
+					index = i + 1;
+					value = list.get(index);
+					list.set(index, list.get(index) != 9 ? value + 1 : value);
+				}
+				if (i >= 8) { // Top
+					index = i - 8;
+					value = list.get(index);
+					list.set(index, list.get(index) != 9 ? value + 1 : value);
+					if (i % 8 != 0) { // Top left
+						index = i - 9;
+						value = list.get(index);
+						list.set(index, list.get(index) != 9 ? value + 1 : value);
+					}
+					if (i % 8 != 7) { // Top right
+						index = i - 7;
+						value = list.get(index);
+						list.set(index, list.get(index) != 9 ? value + 1 : value);
+					}
+				}
+				if (i <= 55) { // Bottom
+					index = i + 8;
+					value = list.get(index);
+					list.set(index, list.get(index) != 9 ? value + 1 : value);
+					if (i % 8 != 0) { // Bottom left
+						index = i + 7;
+						value = list.get(index);
+						list.set(index, list.get(index) != 9 ? value + 1 : value);
+					}
+					if (i % 8 != 7) { // Bottom right
+						index = i + 9;
+						value = list.get(index);
+						list.set(index, list.get(index) != 9 ? value + 1 : value);
+					}
+				}
+    			
+    		}
+    		
+    	}
+		
+		for (int i = 0; i < list.size(); i++) {
+    		list.set(i, list.get(i) + 10);
+    	}
+    	
+    	return list;
+    }
+    
+    
 
     /**
      * This will initialize a new JPanel to house the functions of 
